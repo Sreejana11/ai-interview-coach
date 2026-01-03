@@ -1,17 +1,16 @@
 # app.py
-# AI Interview Coach – Step 4 (AI Integrated + Score Fix)
+# AI Interview Coach – Final Version (AI + Report)
 
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# Load environment variables
-load_dotenv()
+# ---------------- ENV & CLIENT SETUP ---------------- #
 
-# Initialize OpenAI client
+load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ---------------- AI Evaluation Function ---------------- #
+# ---------------- AI EVALUATION FUNCTION ---------------- #
 
 def ai_evaluate_answer(question, answer, role):
     prompt = f"""
@@ -37,15 +36,13 @@ One suggestion to improve:
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
+        messages=[{"role": "user", "content": prompt}]
     )
 
     return response.choices[0].message.content
 
 
-# ---------------- Interview Flow ---------------- #
+# ---------------- INTERVIEW FLOW ---------------- #
 
 print("Welcome to the AI Interview Coach\n")
 
@@ -64,6 +61,7 @@ questions = [
 
 total_ai_score = 0
 max_score = len(questions) * 10
+feedback_list = []
 
 for question in questions:
     print("\nQuestion:")
@@ -75,7 +73,9 @@ for question in questions:
     ai_feedback = ai_evaluate_answer(question, answer, role)
     print(ai_feedback)
 
-    # ✅ SAFE SCORE EXTRACTION (FIXED)
+    feedback_list.append(ai_feedback)
+
+    # Safe score extraction
     for line in ai_feedback.split("\n"):
         if line.lower().startswith("score"):
             try:
@@ -84,8 +84,30 @@ for question in questions:
             except:
                 pass
 
+# ---------------- FINAL REPORT ---------------- #
+
 print("\nInterview completed!")
 print("-" * 50)
 
-print(f"Final AI Interview Score: {total_ai_score} / {max_score}")
-print("\nThank you for attending the AI Interview!")
+print("\nFINAL INTERVIEW REPORT")
+print("=" * 50)
+
+print(f"Candidate Name : {name}")
+print(f"Role Applied   : {role}")
+print(f"Overall Score  : {total_ai_score} / {max_score}")
+
+if total_ai_score >= 30:
+    level = "Excellent"
+elif total_ai_score >= 20:
+    level = "Good"
+elif total_ai_score >= 10:
+    level = "Average"
+else:
+    level = "Needs Improvement"
+
+print(f"Performance    : {level}")
+
+print("\nGeneral Advice:")
+print("Practice structured answers using real examples, focus on clarity, and align responses with the job role.")
+
+print("\nThank you for using the AI Interview Coach!")
